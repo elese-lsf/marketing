@@ -107,6 +107,13 @@ main.hp .lead{font-size:clamp(13px,1.3vw,16px)}
 .pr .t{height:10px;border-radius:6px;background:var(--tint);overflow:hidden}
 .pr .t i{display:block;height:100%;background:var(--a1);transition:width .25s}
 .pr.top .t i{background:var(--ok)}
+.stk{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--tint)}
+.stk i{display:block;height:100%}
+.leg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px;margin-top:4px}
+.pollres.mini{background:none;border:0;padding:0}
+.opts1{display:grid;gap:12px}
+.opts2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.opts2 .opt{padding:12px 10px;font-size:15px;text-align:center}
 .live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;white-space:nowrap}
 .dot{width:9px;height:9px;border-radius:50%;background:#999}.dot.on{background:var(--ok)}.dot.off{background:var(--bad)}
 .stat{display:none;justify-content:space-between;gap:10px;padding:8px 14px;font-size:12px;color:var(--muted);background:var(--card);border-top:1px solid var(--line)}
@@ -199,7 +206,7 @@ var NOTES=[
  '<b>M1 · Mercado.</b> Pedí que elijan a quién le hablan y por qué. Conecta con segmentación. Preguntá: ¿a quién más le hablarían y qué cambiaría en el mensaje? Datos inventados con fines didácticos.',
  '<b>M2 · Misión.</b> Mové el slider y preguntá cómo cambia el esfuerzo. Pedí que ubiquen el objetivo en el embudo. Un objetivo bien definido es medible y tiene plazo. El CAC se actualiza en la pantalla 6.',
  '<b>M3 · Mensaje.</b> Votación a mano alzada: cada toque en «+1» suma un voto. Preguntá qué palabra o rasgo los llevó a elegir. Conecta con «¿de qué marca es este tuit?».',
- '<b>M4 · Medios.</b> Que clasifiquen cada canal antes de revelar. Discutí el caso del micro-influencer: el posteo pago es pago, y lo que comparta su comunidad es compartido.',
+ '<b>M4 · Medios.</b> Los alumnos clasifican los seis canales desde el celular y ves la distribución en cada fila. Tocá «Cargar el más votado» y después «Revelar respuestas»: cada fila muestra el porcentaje que acertó. Discutí el micro-influencer: el posteo pago es pago, y lo que comparta su comunidad es compartido.',
  '<b>M5 · Money.</b> Que propongan el reparto y movelo en vivo. Preguntá qué recortarían primero si el presupuesto bajara. El reparto tiene que responder al objetivo.',
  '<b>M6 · Medición.</b> CAC = inversión ÷ clientes nuevos. Probá «si baja a la mitad». Que elijan 3 KPI y discutan cuáles son de vanidad y cuáles de negocio.',
  '<b>Cierre del plan.</b> Que lean el plan en voz alta. Preguntá qué M fue la más difícil de decidir. Si querés, copiá el resumen y pegalo en el chat o en un documento.',
@@ -226,13 +233,13 @@ var POLLS={
  seg:{t:'¿A quién le habla Matequo?',tipo:'una',scr:0,op:SEGS.map(function(s){return [s.id,s.t]})},
  etapa:{t:'¿En qué etapa del embudo está el objetivo?',tipo:'una',scr:1,op:STAGES.map(function(s){return [s.id,s.t]})},
  tono:{t:'¿Qué tono elegís?',tipo:'una',scr:2,op:[['A','A · «El mate de siempre, con onda»'],['B','B · «Hecho a mano, para toda la vida»']]},
- infl:{t:'Micro-influencer con posteo pago: ¿qué tipo de medio es?',tipo:'una',scr:3,op:[['propio','Propio'],['pago','Pago'],['ganado','Ganado'],['compartido','Compartido']]},
  rep:{t:'¿Cómo repartirías los $300.000? (pauta / contenido / influencers)',tipo:'una',scr:4,op:[['70-20-10','Pauta fuerte: 70 / 20 / 10'],['50-30-20','Equilibrado: 50 / 30 / 20'],['30-40-30','Contenido y comunidad: 30 / 40 / 30']]},
  kpi:{t:'Elegí 3 KPI para medir el plan',tipo:'multi',max:3,scr:5,op:KPIS.map(function(k,i){return [String(i),k.n]})},
  sem:{t:'¿Qué color le ponés a la reseña viral?',tipo:'una',scr:7,op:[['v','Verde'],['a','Amarillo'],['r','Rojo']]},
  msg:{t:'¿Cuál es el primer mensaje?',tipo:'una',scr:7,op:MSGS.map(function(m){return [m.id,m.t]})},
  pm:{t:'¿Qué cambia puertas adentro?',tipo:'multi',max:5,scr:7,op:PMS.map(function(p){return [p.id,p.t]})}
 };
+CH.forEach(function(c,i){POLLS['c'+i]={t:c.n,tipo:'una',scr:3,mini:true,op:PESO}});
 var POLLIDS=Object.keys(POLLS);
 function pollsOf(scr){return POLLIDS.filter(function(k){return POLLS[k].scr===scr})}
 function arrOf(x){return Array.isArray(x)?x:(x&&typeof x==='object'?Object.keys(x).map(function(k){return x[k]}):(x==null?[]:[x]))}
@@ -251,6 +258,16 @@ function tally(id){
 function topOf(id){var t=tally(id),b=null;POLLS[id].op.forEach(function(o){if(t.c[o[0]]>0&&(b===null||t.c[o[0]]>t.c[b]))b=o[0]});return b}
 function topN(id,k){var t=tally(id);return POLLS[id].op.map(function(o){return o[0]}).filter(function(x){return t.c[x]>0}).sort(function(a,b){return t.c[b]-t.c[a]}).slice(0,k)}
 function tonoTot(){var t=tally('tono');return {A:S.vA+t.c.A,B:S.vB+t.c.B}}
+var PAL={propio:'#2E7D3C',pago:'#C2274F',ganado:'#E8553A',compartido:'#8E2B7E'};
+function miniCard(id){
+  var P=POLLS[id],t=tally(id),i=+id.slice(1),right=CH[i].c;
+  if(!t.n)return '<span class="muted">Todavía sin votos de la clase</span>';
+  var bar='<span class="stk">'+P.op.map(function(o){var w=t.c[o[0]]*100/t.n;return w?'<i style="width:'+w+'%;background:'+PAL[o[0]]+'"></i>':''}).join('')+'</span>';
+  var leg=P.op.map(function(o){return '<span><b style="color:'+PAL[o[0]]+'">●</b> '+o[1]+' '+t.c[o[0]]+'</span>'}).join('');
+  var rl=P.op.filter(function(o){return o[0]===right})[0][1];
+  var acc=S.rev?' <b class="ok">· '+Math.round(t.c[right]*100/t.n)+'% acertó ('+rl+')</b>':'';
+  return bar+'<div class="leg">'+leg+acc+'</div>';
+}
 var APPLY={seg:1,etapa:1,rep:1,kpi:1,sem:1,msg:1,pm:1};
 function resCard(id){
   var P=POLLS[id],t=tally(id),mx=1,top=topOf(id);
@@ -263,7 +280,7 @@ function resCard(id){
 function updPolls(){
   var els=document.querySelectorAll('.pollres'),mxN=0;
   POLLIDS.forEach(function(id){mxN=Math.max(mxN,tally(id).n)});
-  for(var i=0;i<els.length;i++){var el=els[i],id=el.getAttribute('data-poll'),h=resCard(id);if(el.getAttribute('data-h')!==h){el.innerHTML=h;el.setAttribute('data-h',h)}}
+  for(var i=0;i<els.length;i++){var el=els[i],id=el.getAttribute('data-poll'),h=POLLS[id].mini?miniCard(id):resCard(id);if(el.getAttribute('data-h')!==h){el.innerHTML=h;el.setAttribute('data-h',h)}}
   if(cur===2&&$('vA'))updVotes();
   var lt=$('livet');if(lt&&NET.ok)lt.textContent='En línea · sala '+SALA+(mxN?' · '+mxN+' votaron':'');
 }
@@ -332,11 +349,11 @@ R[3]=function(){
     var btns=PESO.map(function(p){return '<button class="chip'+(v===p[0]?' on':'')+'" data-act="chan" data-i="'+i+'" data-v="'+p[0]+'">'+p[1]+'</button>'}).join('');
     var mark=S.rev?(v===c.c?'<span class="ok">✓</span>':'<span class="bad">✗</span>'):'';
     var exp=S.rev?'<div class="muted" style="grid-column:1/-1">'+(v===c.c?'':'Era <b>'+c.c+'</b>. ')+c.e+'</div>':'';
-    return '<div class="chrow"><div><b>'+c.n+'</b></div><div class="row">'+btns+'</div><div>'+mark+'</div>'+exp+'</div>';
+    return '<div class="chrow"><div><b>'+c.n+'</b></div><div class="row">'+btns+'</div><div>'+mark+'</div>'+exp+'<div class="pollres mini" data-poll="c'+i+'" style="grid-column:1/-1"></div></div>';
   }).join('');
   var done=Object.keys(S.chan).length;
   var sc=S.rev?'<span class="mid">'+ok+' de '+CH.length+' coinciden</span>':'<span class="muted">Clasificados: '+done+' de '+CH.length+'</span>';
-  return '<div class="steps"><div class="card lead"><b>PESO:</b> medios <b>P</b>ropios, <b>P</b>agos, <b>G</b>anados y <b>C</b>ompartidos. Pedí a la clase que decida cada canal antes de revelar.</div><div class="table">'+rows+'</div><div class="row" style="align-items:center"><button class="btn main" data-act="rev">'+(S.rev?'Ocultar respuestas':'Revelar respuestas')+'</button><button class="btn" data-act="chReset">Borrar</button>'+sc+'</div></div>'+note();
+  return '<div class="steps"><div class="card lead"><b>PESO:</b> medios <b>P</b>ropios, <b>P</b>agos, <b>G</b>anados y <b>C</b>ompartidos. La clase clasifica cada canal desde el celular; después revelás las respuestas.</div><div class="table">'+rows+'</div><div class="row" style="align-items:center"><button class="btn main" data-act="rev">'+(S.rev?'Ocultar respuestas':'Revelar respuestas')+'</button><button class="btn" data-act="chReset">Borrar</button><button class="btn" data-act="apChan">Cargar el más votado</button><button class="btn" data-act="chVReset">Reiniciar votos</button>'+sc+'</div></div>'+note();
 };
 R[4]=function(){
   var b=S.budget,p=b*S.pauta/100,c=b*S.cont/100,i=b*infl()/100;
@@ -407,7 +424,7 @@ function build(){
 function render(){
   $('title').textContent=TIT[cur];
   var h=R[cur]();
-  var ps=pollsOf(cur);
+  var ps=pollsOf(cur).filter(function(id){return !POLLS[id].mini});
   if(ps.length)h+='<div class="pollgrid">'+ps.map(function(id){return '<div class="pollres" data-poll="'+id+'"></div>'}).join('')+'</div>';
   $('main').innerHTML=h;
   $('main').className=ps.length?'hp':'';
@@ -456,6 +473,8 @@ $('main').addEventListener('click',function(e){
   else if(a==='pm')toggle(S.pm,v,0);
   else if(a==='copy'){copySummary();return}
   else if(a==='pReset'){resetPolls([v]);return}
+  else if(a==='chVReset'){resetPolls(CH.map(function(c,i){return 'c'+i}));return}
+  else if(a==='apChan'){CH.forEach(function(c,i){var tp=topOf('c'+i);if(tp)S.chan[i]=tp})}
   else if(a==='ap'){applyPoll(v)}
   var y=$('main').scrollTop;render();$('main').scrollTop=y;
 });
@@ -503,8 +522,8 @@ function setMine(id,a){lsSet('matequo_'+SALA+'_'+id,JSON.stringify(a))}
 var MSGHINT={};
 function pollHtml(id){
   var P=POLLS[id],m=mine(id);
-  var hint=P.tipo==='multi'?'Podés elegir hasta '+P.max+' ('+m.length+' de '+P.max+').':'Tocá una opción. Podés cambiar tu voto.';
-  return '<div class="step"><h3>'+P.t+'</h3>'+P.op.map(function(o){return '<button class="opt'+(m.indexOf(o[0])>-1?' on':'')+'" data-act="vote" data-p="'+id+'" data-v="'+o[0]+'">'+o[1]+'</button>'}).join('')+'<div class="muted" id="h_'+id+'">'+(MSGHINT[id]||hint)+'</div></div>';
+  var hint=P.mini?'Tocá una opción. Podés cambiar tu voto.':P.tipo==='multi'?'Podés elegir hasta '+P.max+' ('+m.length+' de '+P.max+').':'Tocá una opción. Podés cambiar tu voto.';
+  return '<div class="step"><h3>'+P.t+'</h3><div class="'+(P.mini?'opts2':'opts1')+'">'+P.op.map(function(o){return '<button class="opt'+(m.indexOf(o[0])>-1?' on':'')+'" data-act="vote" data-p="'+id+'" data-v="'+o[0]+'">'+o[1]+'</button>'}).join('')+'</div><div class="muted" id="h_'+id+'">'+(MSGHINT[id]||hint)+'</div></div>';
 }
 function renderAlumno(){
   if(cur===null){$('title').textContent='Matequo';$('main').innerHTML='<div class="stu"><div class="card lead"><b>Esperando que el docente empiece…</b><div class="muted">Esta pantalla se actualiza sola.</div></div></div>';return}
