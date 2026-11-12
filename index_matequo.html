@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Matequo · plan de comunicación en vivo</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js" defer></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#F9F5EF;--fg:#24101B;--muted:#6B5560;--line:#E4D5C5;--card:#FFFFFF;
+  --p1a:#FBE3E6;--p1b:#F4C3CC;--p2a:#FBE9D6;--p2b:#F2CFA9;--p3a:#EEDBEA;--p3b:#D9B6D6;
+  --a1:#C2274F;--a2:#E8553A;--a3:#8E2B7E;--ok:#2E7D3C;--warn:#B7791F;--bad:#C2274F;
+  --bar:#4A0F26;--tint:rgba(36,16,27,.06);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#1B0C14;--fg:#F6EDE6;--muted:#C4AEB8;--line:#3A2230;--card:#2A1521;
+    --p1a:#3A1822;--p1b:#52202F;--p2a:#3B2418;--p2b:#533020;--p3a:#2E1A36;--p3b:#43264F;
+    --a1:#FF5A7E;--a2:#FF8A66;--a3:#D58BE0;--ok:#6CC27A;--warn:#E3B04B;--bad:#FF5A7E;
+    --bar:#12060C;--tint:rgba(246,237,230,.08);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#1B0C14;--fg:#F6EDE6;--muted:#C4AEB8;--line:#3A2230;--card:#2A1521;
+  --p1a:#3A1822;--p1b:#52202F;--p2a:#3B2418;--p2b:#533020;--p3a:#2E1A36;--p3b:#43264F;
+  --a1:#FF5A7E;--a2:#FF8A66;--a3:#D58BE0;--ok:#6CC27A;--warn:#E3B04B;--bad:#FF5A7E;
+  --bar:#12060C;--tint:rgba(246,237,230,.08);
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;line-height:1.35}
+.app{height:100%;display:flex;flex-direction:column}
+header{padding:12px 20px;text-align:center;font-weight:800;font-size:clamp(17px,2.3vw,30px);background:var(--card);border-bottom:1px solid var(--line)}
+main{flex:1;min-height:0;overflow:auto;padding:14px 18px 10px}
+.cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:860px){.cols{grid-template-columns:1fr}}
+.panel{border-radius:18px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;background:linear-gradient(160deg,var(--pa),var(--pb));border:2px solid transparent;min-width:0}
+.p1{--pa:var(--p1a);--pb:var(--p1b)}.p2{--pa:var(--p2a);--pb:var(--p2b)}.p3{--pa:var(--p3a);--pb:var(--p3b)}
+.panel.sel{border-color:var(--a1);box-shadow:0 0 0 3px color-mix(in srgb,var(--a1) 25%,transparent)}
+.kicker{font-size:12px;letter-spacing:.12em;font-weight:800;text-transform:uppercase}
+.big{font-size:clamp(52px,8.5vw,118px);font-weight:800;line-height:.95;letter-spacing:-.02em;word-break:break-word}
+.big.sm{font-size:clamp(36px,5.2vw,76px);white-space:nowrap}
+.mid{font-size:clamp(22px,3vw,38px);font-weight:800;line-height:1.05}
+.lead{font-size:clamp(14px,1.55vw,19px)}
+.muted{color:var(--muted);font-size:13px}
+.note{font-size:12px;color:var(--muted);text-align:center;padding:8px 0 2px}
+.chip{display:inline-block;border:1.5px solid var(--fg);background:transparent;color:var(--fg);border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.chip.on{background:var(--fg);color:var(--bg)}
+.chip.v.on{background:var(--a2);border-color:var(--a2);color:#fff}
+.chip.n.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--fg);border-radius:10px;padding:8px 12px;font:inherit;font-weight:600;cursor:pointer;min-width:40px}
+.btn:hover{background:var(--tint)}
+.btn.main{background:var(--a1);border-color:var(--a1);color:#fff}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.sample{background:var(--card);border-radius:14px;padding:12px 14px;font-size:15px;border:1px solid var(--line)}
+input[type=range]{width:100%;accent-color:var(--a1);height:28px}
+.bars{display:grid;gap:8px}
+.br{display:grid;grid-template-columns:92px 1fr auto;gap:8px;align-items:center;font-size:13px}
+.br .t{height:14px;border-radius:7px;background:var(--tint);overflow:hidden}
+.br .t i{display:block;height:100%;border-radius:7px;background:var(--fg);transition:width .25s}
+.br b{font-variant-numeric:tabular-nums}
+.dots{letter-spacing:3px;color:var(--a1);font-size:15px}
+.table{display:grid;gap:8px}
+.chrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,2.4fr) 28px;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+@media(max-width:700px){.chrow{grid-template-columns:1fr}}
+.ok{color:var(--ok);font-weight:800}.bad{color:var(--bad);font-weight:800}
+.fb{background:var(--card);border-left:5px solid var(--a1);border-radius:10px;padding:10px 12px;font-size:14px}
+.sem{width:46px;height:46px;border-radius:50%;border:3px solid transparent;cursor:pointer}
+.sem.on{border-color:var(--fg)}
+.steps{display:grid;gap:12px;max-width:980px;margin:0 auto}
+.step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;display:grid;gap:10px}
+.step h3{margin:0;font-size:15px}
+.review{background:var(--tint);border-radius:12px;padding:12px 14px}
+.notes{display:none;background:var(--bar);color:#fff;padding:10px 20px;font-size:14px}
+.notes.show{display:block}
+.notes b{color:#F6DCC0}
+.bar{display:flex;align-items:center;gap:8px;padding:9px 14px;background:var(--card);border-top:1px solid var(--line);flex-wrap:wrap}
+.prog{flex:1;min-width:260px;display:flex;gap:3px;height:32px}
+.seg{flex:1;border:0;border-radius:5px;color:#fff;font:inherit;font-size:11px;font-weight:800;cursor:pointer;opacity:.42;padding:0 3px;overflow:hidden;white-space:nowrap}
+.seg.done{opacity:.8}.seg.on{opacity:1;outline:2px solid var(--fg);outline-offset:1px}
+.count{font-variant-numeric:tabular-nums;font-weight:700;min-width:46px;text-align:center}
+@media(max-width:600px){.seg span{display:none}}
+.sumgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:860px){.sumgrid{grid-template-columns:1fr}}
+
+main{display:flex;flex-direction:column;gap:12px}
+.cols{flex:1 0 auto;min-height:0}
+.steps,.sumgrid{width:100%}
+main.hp .big{font-size:clamp(40px,5.4vw,76px)}
+main.hp .big.sm{font-size:clamp(32px,4.6vw,64px)}
+main.hp .mid{font-size:clamp(18px,2.2vw,28px)}
+main.hp .panel{padding:12px 16px;gap:6px}
+main.hp .lead{font-size:clamp(13px,1.3vw,16px)}
+.pollgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;flex:none}
+.pollres{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 12px}
+.pollres h4{margin:0 0 6px;font-size:13px}
+.pr{display:grid;grid-template-columns:minmax(90px,1.4fr) 2fr 30px;gap:8px;align-items:center;font-size:12px;margin:3px 0}
+.pr .t{height:10px;border-radius:6px;background:var(--tint);overflow:hidden}
+.pr .t i{display:block;height:100%;background:var(--a1);transition:width .25s}
+.pr.top .t i{background:var(--ok)}
+.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;white-space:nowrap}
+.dot{width:9px;height:9px;border-radius:50%;background:#999}.dot.on{background:var(--ok)}.dot.off{background:var(--bad)}
+.stat{display:none;justify-content:space-between;gap:10px;padding:8px 14px;font-size:12px;color:var(--muted);background:var(--card);border-top:1px solid var(--line)}
+body.alumno .stat{display:flex}
+body.alumno .bar,body.alumno .notes{display:none}
+.stu{max-width:560px;margin:0 auto;display:grid;gap:12px;width:100%}
+.opt{display:block;width:100%;text-align:left;border:2px solid var(--line);background:var(--card);color:var(--fg);border-radius:14px;padding:14px 16px;font:inherit;font-weight:600;font-size:16px;cursor:pointer}
+.opt.on{border-color:var(--a1);background:color-mix(in srgb,var(--a1) 14%,var(--card))}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:9;padding:20px}
+.modal.show{display:flex}
+.modal .box{background:var(--card);color:var(--fg);border-radius:18px;padding:22px;text-align:center;max-width:440px;width:100%;display:grid;gap:12px}
+.modal .url{font-size:13px;word-break:break-all;background:var(--tint);border-radius:10px;padding:8px 10px}
+#qr svg,#qr img{width:220px;height:220px;max-width:100%;background:#fff;padding:8px;border-radius:12px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header id="title"></header>
+  <main id="main"></main>
+  <div class="notes" id="notes"></div>
+  <div class="stat" id="stat"><span id="statL"></span><span id="statR"></span></div>
+  <div class="bar">
+    <button class="btn" id="first" title="Primera pantalla" aria-label="Primera pantalla">⏮</button>
+    <button class="btn" id="prev" title="Anterior" aria-label="Anterior">◀</button>
+    <span class="count" id="count"></span>
+    <button class="btn" id="next" title="Siguiente" aria-label="Siguiente">▶</button>
+    <button class="btn" id="last" title="Última pantalla" aria-label="Última pantalla">⏭</button>
+    <div class="prog" id="prog"></div>
+    <span class="live" id="live"><span class="dot" id="dot"></span><span id="livet">Sin conexión</span></span>
+    <button class="btn" id="bshare">Alumnos</button>
+    <button class="btn" id="bnotes">Notas</button>
+    <button class="btn" id="btheme" title="Modo claro u oscuro" aria-label="Modo claro u oscuro">◐</button>
+    <button class="btn" id="bfs" title="Pantalla completa" aria-label="Pantalla completa">⛶</button>
+  </div>
+</div>
+<div class="modal" id="modal"><div class="box"><div class="mid" style="font-size:22px">Que entren los alumnos</div><div id="qr"></div><div class="url" id="murl"></div><div class="row" style="justify-content:center"><button class="btn main" id="mcopy">Copiar link</button><button class="btn" id="mclear">Reiniciar todos los votos</button><button class="btn" id="mclose">Cerrar</button></div><div class="muted" id="mmsg"></div></div></div>
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+var fmt=function(n){return '$'+String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g,'.')};
+var S={seg:'jov',clients:500,stage:'desc',vA:0,vB:0,chan:{},rev:false,budget:300000,pauta:50,cont:30,kpi:[],half:false,sem:null,msg:null,pm:[]};
+
+var SEGS=[
+ {id:'jov',t:'Jóvenes de 20 a 35',n:'20–35',d:'Toman mate a diario, compran online y siguen marcas en redes.',on:3,tk:2,rc:3,cn:'Instagram y TikTok'},
+ {id:'ofi',t:'Oficinas y equipos',n:'10+',d:'Compran para todo un equipo de trabajo y deciden entre varias personas.',on:2,tk:3,rc:2,cn:'LinkedIn y email'},
+ {id:'reg',t:'Regalos y turistas',n:'1 vez',d:'Compran un regalo o un souvenir y, en general, una sola vez.',on:2,tk:3,rc:1,cn:'Búsqueda y marketplaces'}
+];
+var STAGES=[
+ {id:'desc',t:'Descubrimiento',d:'Que más gente conozca la marca. Se mide en alcance y tráfico.'},
+ {id:'cons',t:'Consideración',d:'Que quienes la conocen evalúen y comparen. Se mide en leads y tiempo en el sitio.'},
+ {id:'dec',t:'Decisión',d:'Que quienes evalúan compren. Se mide en conversión y CAC.'}
+];
+var CH=[
+ {n:'Instagram de Matequo',c:'propio',e:'La cuenta es de la marca: la controla y la administra.'},
+ {n:'TikTok de Matequo',c:'propio',e:'También es un canal propio, aunque el algoritmo lo reparta.'},
+ {n:'Anuncio en Google (búsqueda)',c:'pago',e:'La marca paga por el clic o por la posición.'},
+ {n:'Micro-influencer con posteo pago',c:'pago',e:'La marca paga por ese espacio. Lo que la comunidad comparta después es otra cosa.'},
+ {n:'Nota en un medio sobre el emprendimiento',c:'ganado',e:'Otros hablan de la marca sin que ella pague ese espacio.'},
+ {n:'Clientes que suben fotos y etiquetan',c:'compartido',e:'Circula entre comunidades, fuera del control de la marca.'}
+];
+var PESO=[['propio','Propio'],['pago','Pago'],['ganado','Ganado'],['compartido','Compartido']];
+var KPIS=[
+ {n:'Seguidores',t:'v'},{n:'Likes',t:'v'},{n:'Impresiones',t:'v'},{n:'Alcance',t:'v'},
+ {n:'CAC',t:'n'},{n:'Tasa de conversión',t:'n'},{n:'ROAS',t:'n'},{n:'Recompra',t:'n'}
+];
+var MSGS=[
+ {id:'A',t:'«Los envíos los maneja el correo, nosotros no tenemos responsabilidad.»',f:'Culpar a un tercero empeora la crisis: el cliente no lo ve como un problema del correo sino de la marca.'},
+ {id:'B',t:'«Lamentamos lo que pasó y tenés razón en reclamar. Ya te escribimos por privado para reponerte el mate hoy.»',f:'Correcto: reconoce, dice qué se va a hacer y ofrece un canal. Es un primer mensaje que baja el conflicto.'},
+ {id:'C',t:'«¡Qué mala sombra! Mate roto, mate que se cambia.»',f:'El humor no encaja con un cliente enojado y un público mirando. Funciona en otros contextos, no en este.'}
+];
+var PMS=[
+ {id:'emb',t:'Mejorar el embalaje',ok:1},{id:'aten',t:'Atención con respuesta el mismo día',ok:1},
+ {id:'alert',t:'Alertas de reseñas y menciones',ok:1},{id:'man',t:'Manual de crisis con un vocero',ok:1},
+ {id:'culp',t:'Buscar a quién culpar',ok:0}
+];
+var TIT=[
+ '¿A quién le habla Matequo?',
+ 'De un objetivo difuso a 500 clientes nuevos',
+ 'Dos tonos, una sola marca: ¿cuál elegimos?',
+ '¿Dónde le hablamos? Clasificá cada canal con PESO',
+ 'Del presupuesto al reparto: $300.000 para 3 meses',
+ 'El CAC: cuánto podemos pagar por cada cliente nuevo',
+ 'Matequo en una página',
+ 'Apareció una reseña viral: ¿qué hacemos?'
+];
+var LAB=['Mercado','Misión','Mensaje','Medios','Money','Medición','Plan','Crisis'];
+var HASH=['mercado','mision','mensaje','medios','money','medicion','plan','crisis'];
+var COL=['#C2274F','#C2274F','#C2274F','#E8553A','#E8553A','#E8553A','#8E2B7E','#7A1F3D'];
+var NOTES=[
+ '<b>M1 · Mercado.</b> Pedí que elijan a quién le hablan y por qué. Conecta con segmentación. Preguntá: ¿a quién más le hablarían y qué cambiaría en el mensaje? Datos inventados con fines didácticos.',
+ '<b>M2 · Misión.</b> Mové el slider y preguntá cómo cambia el esfuerzo. Pedí que ubiquen el objetivo en el embudo. Un objetivo bien definido es medible y tiene plazo. El CAC se actualiza en la pantalla 6.',
+ '<b>M3 · Mensaje.</b> Votación a mano alzada: cada toque en «+1» suma un voto. Preguntá qué palabra o rasgo los llevó a elegir. Conecta con «¿de qué marca es este tuit?».',
+ '<b>M4 · Medios.</b> Que clasifiquen cada canal antes de revelar. Discutí el caso del micro-influencer: el posteo pago es pago, y lo que comparta su comunidad es compartido.',
+ '<b>M5 · Money.</b> Que propongan el reparto y movelo en vivo. Preguntá qué recortarían primero si el presupuesto bajara. El reparto tiene que responder al objetivo.',
+ '<b>M6 · Medición.</b> CAC = inversión ÷ clientes nuevos. Probá «si baja a la mitad». Que elijan 3 KPI y discutan cuáles son de vanidad y cuáles de negocio.',
+ '<b>Cierre del plan.</b> Que lean el plan en voz alta. Preguntá qué M fue la más difícil de decidir. Si querés, copiá el resumen y pegalo en el chat o en un documento.',
+ '<b>Crisis.</b> Aplicá el protocolo: evaluar (semáforo), responder (primer mensaje) y aprender (post-mortem). Pedí que justifiquen cada decisión antes de mostrar la respuesta.'
+];
+
+function dots(n){var s='';for(var i=0;i<3;i++)s+=i<n?'●':'○';return s}
+function panel(cls,inner,extra){return '<section class="panel '+cls+(extra||'')+'">'+inner+'</section>'}
+function note(){return '<div class="note">Todos los datos de Matequo son inventados con fines didácticos.</div>'}
+function cac(b,c){return c>0?b/c:0}
+function infl(){return 100-S.pauta-S.cont}
+
+
+var BASE='https://matequo-e8d23-default-rtdb.firebaseio.com';
+var Q=new URLSearchParams(location.search);
+var ROL=Q.get('rol')==='docente'?'docente':'alumno';
+var SALA=(Q.get('sala')||'clase3').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,30)||'clase3';
+var API=BASE+'/matequo/'+SALA;
+function jget(p){return fetch(API+p+'.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})}
+function jput(p,v){return fetch(API+p+'.json',{method:'PUT',body:JSON.stringify(v)}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json()})}
+function jdel(p){return fetch(API+p+'.json',{method:'DELETE'}).then(function(r){if(!r.ok)throw new Error(r.status)})}
+
+var POLLS={
+ seg:{t:'¿A quién le habla Matequo?',tipo:'una',scr:0,op:SEGS.map(function(s){return [s.id,s.t]})},
+ etapa:{t:'¿En qué etapa del embudo está el objetivo?',tipo:'una',scr:1,op:STAGES.map(function(s){return [s.id,s.t]})},
+ tono:{t:'¿Qué tono elegís?',tipo:'una',scr:2,op:[['A','A · «El mate de siempre, con onda»'],['B','B · «Hecho a mano, para toda la vida»']]},
+ infl:{t:'Micro-influencer con posteo pago: ¿qué tipo de medio es?',tipo:'una',scr:3,op:[['propio','Propio'],['pago','Pago'],['ganado','Ganado'],['compartido','Compartido']]},
+ rep:{t:'¿Cómo repartirías los $300.000? (pauta / contenido / influencers)',tipo:'una',scr:4,op:[['70-20-10','Pauta fuerte: 70 / 20 / 10'],['50-30-20','Equilibrado: 50 / 30 / 20'],['30-40-30','Contenido y comunidad: 30 / 40 / 30']]},
+ kpi:{t:'Elegí 3 KPI para medir el plan',tipo:'multi',max:3,scr:5,op:KPIS.map(function(k,i){return [String(i),k.n]})},
+ sem:{t:'¿Qué color le ponés a la reseña viral?',tipo:'una',scr:7,op:[['v','Verde'],['a','Amarillo'],['r','Rojo']]},
+ msg:{t:'¿Cuál es el primer mensaje?',tipo:'una',scr:7,op:MSGS.map(function(m){return [m.id,m.t]})},
+ pm:{t:'¿Qué cambia puertas adentro?',tipo:'multi',max:5,scr:7,op:PMS.map(function(p){return [p.id,p.t]})}
+};
+var POLLIDS=Object.keys(POLLS);
+function pollsOf(scr){return POLLIDS.filter(function(k){return POLLS[k].scr===scr})}
+function arrOf(x){return Array.isArray(x)?x:(x&&typeof x==='object'?Object.keys(x).map(function(k){return x[k]}):(x==null?[]:[x]))}
+var VOTES={};
+function tally(id){
+  var P=POLLS[id],c={},n=0;P.op.forEach(function(o){c[o[0]]=0});
+  var v=VOTES[id]||{};
+  Object.keys(v).forEach(function(u){
+    var a=arrOf(v[u]).map(String),seen={},ok=false;
+    a=P.tipo==='una'?a.slice(0,1):a.slice(0,P.max);
+    a.forEach(function(x){if(c.hasOwnProperty(x)&&!seen[x]){seen[x]=1;c[x]++;ok=true}});
+    if(ok)n++;
+  });
+  return {c:c,n:n};
+}
+function topOf(id){var t=tally(id),b=null;POLLS[id].op.forEach(function(o){if(t.c[o[0]]>0&&(b===null||t.c[o[0]]>t.c[b]))b=o[0]});return b}
+function topN(id,k){var t=tally(id);return POLLS[id].op.map(function(o){return o[0]}).filter(function(x){return t.c[x]>0}).sort(function(a,b){return t.c[b]-t.c[a]}).slice(0,k)}
+function tonoTot(){var t=tally('tono');return {A:S.vA+t.c.A,B:S.vB+t.c.B}}
+var APPLY={seg:1,etapa:1,rep:1,kpi:1,sem:1,msg:1,pm:1};
+function resCard(id){
+  var P=POLLS[id],t=tally(id),mx=1,top=topOf(id);
+  P.op.forEach(function(o){if(t.c[o[0]]>mx)mx=t.c[o[0]]});
+  var h='<h4>'+P.t+' <span class="muted">· '+t.n+(t.n===1?' voto':' votos')+'</span></h4>';
+  P.op.forEach(function(o){var q=t.c[o[0]];h+='<div class="pr'+(o[0]===top?' top':'')+'"><span>'+o[1]+'</span><span class="t"><i style="width:'+Math.round(q*100/mx)+'%"></i></span><b>'+q+'</b></div>'});
+  h+='<div class="row" style="margin-top:6px">'+(APPLY[id]?'<button class="btn" data-act="ap" data-v="'+id+'">Aplicar el más votado</button>':'')+'<button class="btn" data-act="pReset" data-v="'+id+'">Reiniciar</button></div>';
+  return h;
+}
+function updPolls(){
+  var els=document.querySelectorAll('.pollres'),mxN=0;
+  POLLIDS.forEach(function(id){mxN=Math.max(mxN,tally(id).n)});
+  for(var i=0;i<els.length;i++){var el=els[i],id=el.getAttribute('data-poll'),h=resCard(id);if(el.getAttribute('data-h')!==h){el.innerHTML=h;el.setAttribute('data-h',h)}}
+  if(cur===2&&$('vA'))updVotes();
+  var lt=$('livet');if(lt&&NET.ok)lt.textContent='En línea · sala '+SALA+(mxN?' · '+mxN+' votaron':'');
+}
+var NET={ok:null};
+function setNet(ok){
+  NET.ok=ok;
+  var d=$('dot');if(d)d.className='dot '+(ok?'on':'off');
+  var t=$('livet');if(t&&!ok)t.textContent='Sin conexión · el docente sigue funcionando';
+  var sl=$('statL');if(sl)sl.textContent=ok?'En línea · sala '+SALA:'Sin conexión: reintentando…';
+}
+var RP={};
+function pushState(){jput('/estado',{p:cur,t:Date.now(),rp:RP}).then(function(){setNet(true)}).catch(function(){setNet(false)})}
+function fetchVotes(){jget('/votos').then(function(v){VOTES=v||{};setNet(true);updPolls()}).catch(function(){setNet(false)})}
+function resetPolls(ids){
+  var now=Date.now();
+  ids.forEach(function(id){RP[id]=now;delete VOTES[id];if(id==='tono'){S.vA=0;S.vB=0}});
+  (ids.length===POLLIDS.length?jdel('/votos'):Promise.all(ids.map(function(id){return jdel('/votos/'+id)}))).then(function(){pushState()}).catch(function(){setNet(false)});
+  updPolls();
+}
+function applyPoll(id){
+  var t;
+  if(id==='seg'){t=topOf('seg');if(t)S.seg=t}
+  else if(id==='etapa'){t=topOf('etapa');if(t)S.stage=t}
+  else if(id==='rep'){t=topOf('rep');if(t){var q=t.split('-');S.pauta=+q[0];S.cont=+q[1]}}
+  else if(id==='kpi'){S.kpi=topN('kpi',3).map(Number)}
+  else if(id==='sem'){t=topOf('sem');if(t)S.sem=t}
+  else if(id==='msg'){t=topOf('msg');if(t)S.msg=t}
+  else if(id==='pm'){S.pm=topN('pm',3)}
+}
+
+var R=[];
+R[0]=function(){
+  var h='<div class="cols">';
+  SEGS.forEach(function(s,i){
+    h+=panel('p'+(i+1),
+     '<div class="kicker">1 · Opción '+'ABC'[i]+'</div><div class="big">'+s.n+'</div>'+
+     '<div class="mid">'+s.t+'</div><div class="lead">'+s.d+'</div>'+
+     '<div class="bars"><div>Compra online <span class="dots">'+dots(s.on)+'</span></div><div>Ticket promedio <span class="dots">'+dots(s.tk)+'</span></div><div>Recompra <span class="dots">'+dots(s.rc)+'</span></div></div>'+
+     '<div class="muted">Canal natural: '+s.cn+'</div>'+
+     '<div style="margin-top:auto"><button class="chip'+(S.seg===s.id?' on':'')+'" data-act="seg" data-v="'+s.id+'">'+(S.seg===s.id?'Elegido ✓':'Elegir a este público')+'</button></div>',
+     S.seg===s.id?' sel':'');
+  });
+  return h+'</div>'+note();
+};
+R[1]=function(){
+  var st=STAGES.filter(function(x){return x.id===S.stage})[0];
+  var h='<div class="cols">';
+  h+=panel('p1','<div class="kicker">2 · El objetivo</div><div class="big" id="clOut">'+S.clients+'</div><div class="lead">clientes nuevos en 3 meses</div><input type="range" id="clients" min="100" max="1000" step="50" value="'+S.clients+'" aria-label="Clientes nuevos"><div class="muted">Movelo: ¿qué tan realista es cada número?</div>');
+  h+=panel('p2','<div class="kicker">¿En qué etapa del embudo?</div><div class="row">'+STAGES.map(function(x){return '<button class="chip'+(S.stage===x.id?' on':'')+'" data-act="stage" data-v="'+x.id+'">'+x.t+'</button>'}).join('')+'</div><div class="mid">'+st.t+'</div><div class="lead">'+st.d+'</div>');
+  h+=panel('p3','<div class="kicker">El plazo</div><div class="big">3</div><div class="lead">meses. Un objetivo medible y con plazo.</div><div class="card"><b>Y el costo de cada cliente:</b><div class="mid" id="cacPrev">'+fmt(cac(S.budget,S.clients))+'</div><div class="muted">CAC con el presupuesto actual ('+fmt(S.budget)+')</div></div>');
+  return h+'</div>'+note();
+};
+R[2]=function(){
+  var tv=tonoTot(),vA=tv.A,vB=tv.B,tot=vA+vB,pa=tot?Math.round(vA*100/tot):0,pb=tot?100-pa:0;
+  var win=tot===0?'Todavía sin votos':(vA===vB?'Empate':(vA>vB?'Gana el tono A':'Gana el tono B'));
+  var h='<div class="cols">';
+  h+=panel('p1','<div class="kicker">Tono A</div><div class="mid">«El mate de siempre, con onda»</div><div class="sample">Lunes. Ya sabés lo que necesitás. No es un café.</div><div class="lead">Cercano, con humor y lenguaje de todos los días.</div><div style="margin-top:auto" class="row"><button class="btn main" data-act="vA">+1 voto</button><span class="mid" id="vA">'+vA+'</span></div>');
+  h+=panel('p2','<div class="kicker">Tono B</div><div class="mid">«Hecho a mano, para toda la vida»</div><div class="sample">Cada mate se cura con paciencia. El tuyo también.</div><div class="lead">Cálido, artesanal y más sereno.</div><div style="margin-top:auto" class="row"><button class="btn main" data-act="vB">+1 voto</button><span class="mid" id="vB">'+vB+'</span></div>');
+  h+=panel('p3','<div class="kicker">Resultado</div><div class="big" id="vT">'+tot+'</div><div class="lead">votos en total</div><div class="bars"><div class="br"><span>Tono A</span><span class="t"><i id="bA" style="width:'+pa+'%"></i></span><b id="pA">'+pa+'%</b></div><div class="br"><span>Tono B</span><span class="t"><i id="bB" style="width:'+pb+'%"></i></span><b id="pB">'+pb+'%</b></div></div><div class="mid" id="vW">'+win+'</div><div><button class="btn" data-act="vReset">Reiniciar votos</button></div>');
+  return h+'</div>'+note();
+};
+R[3]=function(){
+  var ok=0,all=0;
+  var rows=CH.map(function(c,i){
+    var v=S.chan[i];if(S.rev&&v){all++;if(v===c.c)ok++}
+    var btns=PESO.map(function(p){return '<button class="chip'+(v===p[0]?' on':'')+'" data-act="chan" data-i="'+i+'" data-v="'+p[0]+'">'+p[1]+'</button>'}).join('');
+    var mark=S.rev?(v===c.c?'<span class="ok">✓</span>':'<span class="bad">✗</span>'):'';
+    var exp=S.rev?'<div class="muted" style="grid-column:1/-1">'+(v===c.c?'':'Era <b>'+c.c+'</b>. ')+c.e+'</div>':'';
+    return '<div class="chrow"><div><b>'+c.n+'</b></div><div class="row">'+btns+'</div><div>'+mark+'</div>'+exp+'</div>';
+  }).join('');
+  var done=Object.keys(S.chan).length;
+  var sc=S.rev?'<span class="mid">'+ok+' de '+CH.length+' coinciden</span>':'<span class="muted">Clasificados: '+done+' de '+CH.length+'</span>';
+  return '<div class="steps"><div class="card lead"><b>PESO:</b> medios <b>P</b>ropios, <b>P</b>agos, <b>G</b>anados y <b>C</b>ompartidos. Pedí a la clase que decida cada canal antes de revelar.</div><div class="table">'+rows+'</div><div class="row" style="align-items:center"><button class="btn main" data-act="rev">'+(S.rev?'Ocultar respuestas':'Revelar respuestas')+'</button><button class="btn" data-act="chReset">Borrar</button>'+sc+'</div></div>'+note();
+};
+R[4]=function(){
+  var b=S.budget,p=b*S.pauta/100,c=b*S.cont/100,i=b*infl()/100;
+  var h='<div class="cols">';
+  h+=panel('p1','<div class="kicker">5 · El presupuesto</div><div class="big sm" id="bOut">'+fmt(b)+'</div><div class="lead">en total para los 3 meses</div><div class="row">'+[150000,300000,450000].map(function(x){return '<button class="chip'+(b===x?' on':'')+'" data-act="budget" data-v="'+x+'">'+fmt(x)+'</button>'}).join('')+'</div>');
+  h+=panel('p2','<div class="kicker">El reparto</div>'+
+    '<label>Pauta: <b id="lP">'+S.pauta+'%</b></label><input type="range" id="pauta" min="0" max="100" step="5" value="'+S.pauta+'" aria-label="Porcentaje de pauta">'+
+    '<label>Contenido: <b id="lC">'+S.cont+'%</b></label><input type="range" id="cont" min="0" max="100" step="5" value="'+S.cont+'" aria-label="Porcentaje de contenido">'+
+    '<label>Micro-influencers: <b id="lI">'+infl()+'%</b></label><div class="muted">Se calcula solo: lo que queda.</div>');
+  h+=panel('p3','<div class="kicker">En pesos</div><div class="bars">'+
+    '<div class="br"><span>Pauta</span><span class="t"><i id="tP" style="width:'+S.pauta+'%"></i></span><b id="mP">'+fmt(p)+'</b></div>'+
+    '<div class="br"><span>Contenido</span><span class="t"><i id="tC" style="width:'+S.cont+'%"></i></span><b id="mC">'+fmt(c)+'</b></div>'+
+    '<div class="br"><span>Influencers</span><span class="t"><i id="tI" style="width:'+infl()+'%"></i></span><b id="mI">'+fmt(i)+'</b></div></div>'+
+    '<div class="card"><b>Pregunta:</b> si el presupuesto bajara, ¿qué recortarían primero y por qué?</div>');
+  return h+'</div>'+note();
+};
+function kpiFb(){
+  var n=S.kpi.filter(function(k){return KPIS[k].t==='n'}).length;
+  if(S.kpi.length<3)return 'Elegí 3 indicadores ('+S.kpi.length+' de 3).';
+  if(n===3)return 'Los tres miden negocio: están atados a una decisión.';
+  if(n===0)return 'Los tres son de vanidad: se ven bien, pero no dicen si el plan funcionó.';
+  return n+' de negocio y '+(3-n)+' de vanidad. Alcance e impresiones sirven al inicio, pero no alcanzan solos.';
+}
+R[5]=function(){
+  var c=cac(S.budget,S.clients),okc=c<=600;
+  var h='<div class="cols">';
+  h+=panel('p1','<div class="kicker">6 · El CAC</div><div class="big sm" id="cacOut">'+fmt(c)+'</div><div class="lead">'+fmt(S.budget)+' ÷ '+S.clients+' clientes nuevos</div><div class="mid" style="color:'+(okc?'var(--ok)':'var(--bad)')+'">'+(okc?'En objetivo':'Fuera de objetivo')+'</div><div class="muted">El objetivo de Matequo es un CAC de $600 o menos.</div>');
+  var half=S.half;
+  h+=panel('p2','<div class="kicker">¿Y si el presupuesto baja a la mitad?</div><div><button class="chip'+(half?' on':'')+'" data-act="half">'+(half?'Presupuesto a la mitad ✓':'Probar con la mitad')+'</button></div>'+
+    (half?'<div class="card"><b>Mantener el CAC</b><div class="mid">'+Math.round(S.clients/2)+' clientes</div><div class="muted">con '+fmt(S.budget/2)+'</div></div><div class="card"><b>Mantener los '+S.clients+' clientes</b><div class="mid">CAC de '+fmt(cac(S.budget/2,S.clients))+'</div><div class="muted">Muy difícil sin cambiar la propuesta.</div></div>':'<div class="lead">Tocá el botón para ver las dos salidas posibles.</div>'));
+  h+=panel('p3','<div class="kicker">Elegí 3 KPI</div><div class="row">'+KPIS.map(function(k,i){return '<button class="chip '+k.t+(S.kpi.indexOf(i)>-1?' on':'')+'" data-act="kpi" data-v="'+i+'">'+k.n+'</button>'}).join('')+'</div><div class="fb">'+kpiFb()+'</div><div class="muted">Naranja: vanidad. Verde: negocio.</div>');
+  return h+'</div>'+note();
+};
+R[6]=function(){
+  var sg=SEGS.filter(function(s){return s.id===S.seg})[0],st=STAGES.filter(function(x){return x.id===S.stage})[0];
+  var tv=tonoTot(),tot=tv.A+tv.B,tono=tot===0?'Sin votar':(tv.A===tv.B?'Empate entre A y B':(tv.A>tv.B?'Tono A: «El mate de siempre, con onda»':'Tono B: «Hecho a mano, para toda la vida»'));
+  var ok=0;CH.forEach(function(c,i){if(S.chan[i]===c.c)ok++});
+  var med=S.rev?ok+' de '+CH.length+' canales bien clasificados':'Canales sin revelar';
+  var c=cac(S.budget,S.clients);
+  var kp=S.kpi.length?S.kpi.map(function(k){return KPIS[k].n}).join(', '):'Sin elegir';
+  function card(k,t,b){return '<div class="card"><div class="kicker">'+k+'</div><div class="mid" style="font-size:clamp(18px,2.2vw,26px)">'+t+'</div><div class="muted">'+b+'</div></div>'}
+  return '<div class="sumgrid">'+
+    card('Mercado',sg.t,sg.d)+
+    card('Misión',S.clients+' clientes nuevos',st.t+' · en 3 meses')+
+    card('Mensaje',tono,'Votos: '+tv.A+' a '+tv.B)+
+    card('Medios',med,'Mix propio, pago y compartido')+
+    card('Money',fmt(S.budget),'Pauta '+S.pauta+'% · Contenido '+S.cont+'% · Influencers '+infl()+'%')+
+    card('Medición','CAC '+fmt(c),'KPI: '+kp)+
+  '</div><div class="row" style="justify-content:center;margin-top:14px"><button class="btn main" data-act="copy">Copiar resumen</button><span class="muted" id="cpOut"></span></div>'+note();
+};
+R[7]=function(){
+  var semT={v:'Una queja aislada se resuelve en el mismo canal. Esta ya se compartió: no alcanza con eso.',
+   a:'Razonable si recién empieza, pero con miles de reposteos conviene tratarla como crisis.',
+   r:'Correcto: se viraliza y muestra el producto roto. Un solo vocero y un mensaje inmediato.'};
+  var s1='<div class="step"><h3>1 · Evaluar: ¿qué color le ponemos?</h3><div class="review"><b>★☆☆☆☆</b> «El mate llegó roto y nadie me responde. No compren.»<div class="muted">Miles de reposteos y creciendo (ejemplo inventado).</div></div><div class="row">'+
+   [['v','#2E7D3C','Verde'],['a','#E0A100','Amarillo'],['r','#C2274F','Rojo']].map(function(x){return '<button class="sem'+(S.sem===x[0]?' on':'')+'" style="background:'+x[1]+'" data-act="sem" data-v="'+x[0]+'" title="'+x[2]+'" aria-label="'+x[2]+'"></button>'}).join('')+'</div>'+(S.sem?'<div class="fb">'+semT[S.sem]+'</div>':'')+'</div>';
+  var s2='<div class="step"><h3>2 · Responder: ¿cuál es el primer mensaje?</h3>'+MSGS.map(function(m){return '<button class="chip'+(S.msg===m.id?' on':'')+'" style="text-align:left;border-radius:14px" data-act="msg" data-v="'+m.id+'">'+m.t+'</button>'}).join('')+(S.msg?'<div class="fb">'+MSGS.filter(function(m){return m.id===S.msg})[0].f+'</div>':'')+'</div>';
+  var bad=S.pm.indexOf('culp')>-1;
+  var s3='<div class="step"><h3>3 · Aprender: ¿qué cambia puertas adentro?</h3><div class="row">'+PMS.map(function(p){return '<button class="chip'+(S.pm.indexOf(p.id)>-1?' on':'')+'" data-act="pm" data-v="'+p.id+'">'+p.t+'</button>'}).join('')+'</div>'+(S.pm.length?'<div class="fb">'+(bad?'Un post-mortem revisa procesos, no busca culpables. ':'')+'Elegiste '+S.pm.length+(S.pm.length===1?' cambio.':' cambios.')+'</div>':'')+'</div>';
+  return '<div class="steps">'+s1+s2+s3+'</div>'+note();
+};
+
+var cur=0;
+function build(){
+  var p=$('prog');p.innerHTML='';
+  LAB.forEach(function(l,i){var b=document.createElement('button');b.className='seg';b.style.background=COL[i];b.innerHTML='<span>'+l+'</span>';b.title=l;b.setAttribute('aria-label',l);b.onclick=function(){go(i)};p.appendChild(b)});
+}
+function render(){
+  $('title').textContent=TIT[cur];
+  var h=R[cur]();
+  var ps=pollsOf(cur);
+  if(ps.length)h+='<div class="pollgrid">'+ps.map(function(id){return '<div class="pollres" data-poll="'+id+'"></div>'}).join('')+'</div>';
+  $('main').innerHTML=h;
+  $('main').className=ps.length?'hp':'';
+  $('main').scrollTop=0;
+  $('notes').innerHTML=NOTES[cur];
+  $('count').textContent=(cur+1)+' / '+R.length;
+  var segs=$('prog').children;
+  for(var i=0;i<segs.length;i++){segs[i].className='seg'+(i<cur?' done':'')+(i===cur?' on':'')}
+  if(location.hash!=='#'+HASH[cur]){try{history.replaceState(null,'','#'+HASH[cur])}catch(e){location.hash=HASH[cur]}}
+  updPolls();pushState();
+}
+function go(i){cur=Math.max(0,Math.min(R.length-1,i));render()}
+function fromHash(){var h=location.hash.replace('#','');var i=HASH.indexOf(h);return i>-1?i:0}
+
+function updMoney(){
+  var b=S.budget;
+  $('pauta').value=S.pauta;$('cont').value=S.cont;
+  $('lP').textContent=S.pauta+'%';$('lC').textContent=S.cont+'%';$('lI').textContent=infl()+'%';
+  $('tP').style.width=S.pauta+'%';$('tC').style.width=S.cont+'%';$('tI').style.width=infl()+'%';
+  $('mP').textContent=fmt(b*S.pauta/100);$('mC').textContent=fmt(b*S.cont/100);$('mI').textContent=fmt(b*infl()/100);
+}
+function updVotes(){
+  var tv=tonoTot(),tot=tv.A+tv.B,pa=tot?Math.round(tv.A*100/tot):0,pb=tot?100-pa:0;
+  $('vA').textContent=tv.A;$('vB').textContent=tv.B;$('vT').textContent=tot;
+  $('bA').style.width=pa+'%';$('bB').style.width=pb+'%';$('pA').textContent=pa+'%';$('pB').textContent=pb+'%';
+  $('vW').textContent=tot===0?'Todavía sin votos':(tv.A===tv.B?'Empate':(tv.A>tv.B?'Gana el tono A':'Gana el tono B'));
+}
+function toggle(arr,v,max){var i=arr.indexOf(v);if(i>-1)arr.splice(i,1);else{if(max&&arr.length>=max)arr.shift();arr.push(v)}}
+
+$('main').addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]');if(!t)return;
+  var a=t.getAttribute('data-act'),v=t.getAttribute('data-v');
+  if(a==='vA'){S.vA++;updVotes();return}
+  if(a==='vB'){S.vB++;updVotes();return}
+  if(a==='vReset'){resetPolls(['tono']);updVotes();return}
+  if(a==='seg')S.seg=v;
+  else if(a==='stage')S.stage=v;
+  else if(a==='chan')S.chan[+t.getAttribute('data-i')]=v;
+  else if(a==='rev')S.rev=!S.rev;
+  else if(a==='chReset'){S.chan={};S.rev=false}
+  else if(a==='budget')S.budget=+v;
+  else if(a==='half')S.half=!S.half;
+  else if(a==='kpi')toggle(S.kpi,+v,3);
+  else if(a==='sem')S.sem=v;
+  else if(a==='msg')S.msg=v;
+  else if(a==='pm')toggle(S.pm,v,0);
+  else if(a==='copy'){copySummary();return}
+  else if(a==='pReset'){resetPolls([v]);return}
+  else if(a==='ap'){applyPoll(v)}
+  var y=$('main').scrollTop;render();$('main').scrollTop=y;
+});
+$('main').addEventListener('input',function(e){
+  var id=e.target.id,v=+e.target.value;
+  if(id==='clients'){S.clients=v;$('clOut').textContent=v;$('cacPrev').textContent=fmt(cac(S.budget,S.clients))}
+  else if(id==='pauta'){S.pauta=v;if(S.pauta+S.cont>100)S.cont=100-S.pauta;updMoney()}
+  else if(id==='cont'){S.cont=v;if(S.pauta+S.cont>100)S.pauta=100-S.cont;updMoney()}
+});
+function copySummary(){
+  var sg=SEGS.filter(function(s){return s.id===S.seg})[0],st=STAGES.filter(function(x){return x.id===S.stage})[0];
+  var tx='Plan de comunicación de Matequo (datos inventados)\n'+
+   'Mercado: '+sg.t+'\nMisión: '+S.clients+' clientes nuevos en 3 meses ('+st.t+')\n'+
+   'Mensaje: votos A '+tonoTot().A+' · B '+tonoTot().B+'\nMoney: '+fmt(S.budget)+' (pauta '+S.pauta+'%, contenido '+S.cont+'%, influencers '+infl()+'%)\n'+
+   'Medición: CAC '+fmt(cac(S.budget,S.clients))+' · KPI: '+(S.kpi.length?S.kpi.map(function(k){return KPIS[k].n}).join(', '):'sin elegir');
+  var out=$('cpOut');
+  try{navigator.clipboard.writeText(tx).then(function(){out.textContent='Copiado.'},function(){out.textContent='No se pudo copiar.'})}catch(err){out.textContent='No se pudo copiar.'}
+}
+
+$('first').onclick=function(){go(0)};$('prev').onclick=function(){go(cur-1)};
+$('next').onclick=function(){go(cur+1)};$('last').onclick=function(){go(R.length-1)};
+$('bnotes').onclick=function(){$('notes').classList.toggle('show')};
+$('btheme').onclick=function(){
+  var r=document.documentElement,cs=r.getAttribute('data-theme');
+  if(!cs)cs=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  r.setAttribute('data-theme',cs==='dark'?'light':'dark');
+};
+$('bfs').onclick=function(){try{if(document.fullscreenElement)document.exitFullscreen();else document.documentElement.requestFullscreen()}catch(e){}};
+document.addEventListener('keydown',function(e){
+  if(ROL!=='docente')return;
+  if(e.target&&e.target.tagName==='INPUT'&&e.target.type==='range')return;
+  if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);
+  else if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1);
+  else if(e.key==='Home')go(0);else if(e.key==='End')go(R.length-1);
+});
+window.addEventListener('hashchange',function(){if(ROL!=='docente')return;var i=fromHash();if(i!==cur)go(i)});
+
+/* ---------- vista alumno ---------- */
+var UID=null;
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function uid(){if(UID)return UID;UID=lsGet('matequo_uid');if(!UID){UID='u'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);lsSet('matequo_uid',UID)}return UID}
+function mine(id){try{var v=JSON.parse(lsGet('matequo_'+SALA+'_'+id)||'[]');return Array.isArray(v)?v.map(String):[]}catch(e){return []}}
+function setMine(id,a){lsSet('matequo_'+SALA+'_'+id,JSON.stringify(a))}
+var MSGHINT={};
+function pollHtml(id){
+  var P=POLLS[id],m=mine(id);
+  var hint=P.tipo==='multi'?'Podés elegir hasta '+P.max+' ('+m.length+' de '+P.max+').':'Tocá una opción. Podés cambiar tu voto.';
+  return '<div class="step"><h3>'+P.t+'</h3>'+P.op.map(function(o){return '<button class="opt'+(m.indexOf(o[0])>-1?' on':'')+'" data-act="vote" data-p="'+id+'" data-v="'+o[0]+'">'+o[1]+'</button>'}).join('')+'<div class="muted" id="h_'+id+'">'+(MSGHINT[id]||hint)+'</div></div>';
+}
+function renderAlumno(){
+  if(cur===null){$('title').textContent='Matequo';$('main').innerHTML='<div class="stu"><div class="card lead"><b>Esperando que el docente empiece…</b><div class="muted">Esta pantalla se actualiza sola.</div></div></div>';return}
+  $('title').textContent=LAB[cur]+' · '+TIT[cur];
+  var ps=pollsOf(cur);
+  $('main').innerHTML='<div class="stu">'+(ps.length?ps.map(pollHtml).join(''):'<div class="card lead"><b>Mirá la pantalla del aula.</b><div class="muted">En esta parte no hay votación.</div></div>')+'</div>';
+}
+function sendVote(id,v){
+  var P=POLLS[id],a=mine(id);
+  if(P.tipo==='una')a=[v];
+  else{var i=a.indexOf(v);if(i>-1)a.splice(i,1);else{a.push(v);if(a.length>P.max)a.shift()}}
+  setMine(id,a);MSGHINT[id]='Enviando…';renderAlumno();
+  var p=a.length?jput('/votos/'+id+'/'+uid(),P.tipo==='una'?a[0]:a):jdel('/votos/'+id+'/'+uid());
+  p.then(function(){MSGHINT[id]=a.length?'Voto enviado ✓':'Voto retirado.';setNet(true);renderAlumno()}).catch(function(){MSGHINT[id]='No se pudo enviar. Revisá tu conexión y volvé a tocar.';setNet(false);renderAlumno()});
+}
+function pollEstado(){
+  jget('/estado').then(function(e){
+    setNet(true);
+    if(!e||typeof e!=='object'){return}
+    var rp=e.rp&&typeof e.rp==='object'?e.rp:{},changed=false;
+    POLLIDS.forEach(function(id){var k='matequo_rp_'+SALA+'_'+id;if(rp[id]&&String(rp[id])!==lsGet(k)){lsSet(k,String(rp[id]));setMine(id,[]);changed=true}});
+    var p=parseInt(e.p,10);
+    if(!isNaN(p)&&p>=0&&p<R.length&&p!==cur){cur=p;changed=true}
+    if(changed)renderAlumno();
+  }).catch(function(){setNet(false)});
+}
+function startAlumno(){
+  document.body.classList.add('alumno');
+  $('statR').textContent='Matequo · '+SALA;
+  cur=null;renderAlumno();
+  $('main').addEventListener('click',function(e){var t=e.target.closest('[data-act="vote"]');if(!t)return;sendVote(t.getAttribute('data-p'),t.getAttribute('data-v'))});
+  pollEstado();setInterval(pollEstado,2000);
+}
+
+/* ---------- vista docente ---------- */
+function studentUrl(){var u=location.protocol==='file:'?location.href.split('?')[0]:location.origin+location.pathname;return u+'?sala='+SALA}
+function startDocente(){
+  setInterval(fetchVotes,2000);fetchVotes();
+  $('bshare').onclick=function(){
+    var u=studentUrl();$('murl').textContent=u;$('mmsg').textContent='';$('qr').innerHTML='';
+    try{if(window.qrcode){var q=window.qrcode(0,'M');q.addData(u);q.make();$('qr').innerHTML=q.createSvgTag(6,0)}}catch(e){}
+    $('modal').classList.add('show');
+  };
+  $('mclose').onclick=function(){$('modal').classList.remove('show')};
+  $('mcopy').onclick=function(){try{navigator.clipboard.writeText(studentUrl()).then(function(){$('mmsg').textContent='Link copiado.'},function(){$('mmsg').textContent='No se pudo copiar.'})}catch(e){$('mmsg').textContent='No se pudo copiar.'}};
+  $('mclear').onclick=function(){if(confirm('¿Borrar todos los votos de la sala '+SALA+'?')){resetPolls(POLLIDS.slice());$('mmsg').textContent='Votos reiniciados.'}};
+  $('modal').addEventListener('click',function(e){if(e.target===$('modal'))$('modal').classList.remove('show')});
+}
+if(ROL==='alumno'){startAlumno()}
+else{build();cur=fromHash();render();startDocente()}
+})();
+</script>
+</body>
+</html>
