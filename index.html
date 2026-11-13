@@ -220,6 +220,7 @@ function cac(b,c){return c>0?b/c:0}
 function infl(){return 100-S.pauta-S.cont}
 
 
+var VER='v3';
 var BASE='https://matequo-e8d23-default-rtdb.firebaseio.com';
 var Q=new URLSearchParams(location.search);
 var ROL=Q.get('rol')==='docente'?'docente':'alumno';
@@ -282,7 +283,7 @@ function updPolls(){
   POLLIDS.forEach(function(id){mxN=Math.max(mxN,tally(id).n)});
   for(var i=0;i<els.length;i++){var el=els[i],id=el.getAttribute('data-poll'),h=POLLS[id].mini?miniCard(id):resCard(id);if(el.getAttribute('data-h')!==h){el.innerHTML=h;el.setAttribute('data-h',h)}}
   if(cur===2&&$('vA'))updVotes();
-  var lt=$('livet');if(lt&&NET.ok)lt.textContent='En línea · sala '+SALA+(mxN?' · '+mxN+' votaron':'');
+  var lt=$('livet');if(lt&&NET.ok)lt.textContent='En línea · sala '+SALA+(mxN?' · '+mxN+' votaron':'')+' · '+VER;
 }
 var NET={ok:null};
 function setNet(ok){
@@ -552,7 +553,7 @@ function pollEstado(){
 }
 function startAlumno(){
   document.body.classList.add('alumno');
-  $('statR').textContent='Matequo · '+SALA;
+  $('statR').textContent='Matequo · '+SALA+' · '+VER;
   cur=null;renderAlumno();
   $('main').addEventListener('click',function(e){var t=e.target.closest('[data-act="vote"]');if(!t)return;sendVote(t.getAttribute('data-p'),t.getAttribute('data-v'))});
   pollEstado();setInterval(pollEstado,2000);
